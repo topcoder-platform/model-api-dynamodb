@@ -1,0 +1,9 @@
+version: '3'
+services:
+  model-api-dynamodb:
+    image: model-api-dynamodb:latest
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    env_file:
+      - api.env
