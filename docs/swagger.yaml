@@ -1,0 +1,308 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: TopCoder Model API v5
+  description: >
+    ## Pagination
+
+    - Requests that return multiple items will be paginated to 20 items by default.
+
+    - You can specify further pages with the `page` parameter (1 based).
+
+    - You can also set a custom page size up to 100 with the `perPage` parameter.
+
+    - Pagination response data is included in http headers.
+
+    - By default, the response header contains links with `next`, `last`, `first`, `prev` resource links.
+
+host: api.topcoder.com
+basePath: /v5
+schemes:
+  - http
+  - https
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  '/cats':
+    get:
+      tags:
+        - Cats
+      description: |
+        List cats.
+      parameters:
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/perPage'
+        - name: name
+          in: query
+          description: Filter by name, case sensitive, exact match is used
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Cat'
+          headers:
+            X-Next-Page:
+              type: integer
+              description: The index of the next page
+            X-Page:
+              type: integer
+              description: The index of the current page (starting at 1)
+            X-Per-Page:
+              type: integer
+              description: The number of items to list per page
+            X-Prev-Page:
+              type: integer
+              description: The index of the previous page
+            X-Total:
+              type: integer
+              description: The total number of items
+            X-Total-Pages:
+              type: integer
+              description: The total number of pages
+            Link:
+              type: string
+              description: Pagination link header.
+        '400':
+          description: Bad request.  Request parameters were invalid.
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '500':
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+    post:
+      tags:
+        - Cats
+      description: |
+        Create a new cat.
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/CatData'
+      responses:
+        '201':
+          description: Created - The request was successful and the resource is returned.
+          schema:
+            $ref: '#/definitions/Cat'
+        '400':
+          description: Bad request.  Request parameters were invalid.
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '409':
+          description: >
+            Conflict. The name is already defined.
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '500':
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+  '/cats/{catId}':
+    get:
+      tags:
+        - Cats
+      description: Retrieve the cat by id
+      parameters:
+        - name: catId
+          in: path
+          required: true
+          type: string
+          format: UUID
+          description: The id of cat to retrieve
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Cat'
+        '400':
+          description: Bad request.  Request parameters were invalid.
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '404':
+          description: Record not found
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '500':
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+    put:
+      tags:
+        - Cats
+      description: Update the cat with the specified id.
+      parameters:
+        - name: catId
+          in: path
+          required: true
+          type: string
+          format: UUID
+          description: The id of cat to update
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/CatData'
+      responses:
+        '200':
+          description: Updated - The request was successful and the resource is returned.
+          schema:
+            $ref: '#/definitions/Cat'
+        '400':
+          description: Bad request.  Request parameters were invalid.
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '404':
+          description: Record not found
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '409':
+          description: Conflict. Other record has already used the same name.
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '500':
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+    patch:
+      tags:
+        - Cats
+      description: >
+        Partially update the cat with specified id.  Only the fields
+        that are provided will be updated.
+      parameters:
+        - name: catId
+          in: path
+          required: true
+          type: string
+          format: UUID
+          description: The id of cat to update
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/CatData'
+      responses:
+        '200':
+          description: Updated - The request was successful and the resource is returned.
+          schema:
+            $ref: '#/definitions/Cat'
+        '400':
+          description: Bad request.  Request parameters were invalid.
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '404':
+          description: Record not found
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '409':
+          description: >
+            Conflict. Other record has already used the same name.
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '500':
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+    delete:
+      tags:
+        - Cats
+      description: Delete cat.
+      parameters:
+        - name: catId
+          in: path
+          required: true
+          type: string
+          format: UUID
+          description: The id of cat to delete
+      responses:
+        '204':
+          description: Deleted successful.
+        '400':
+          description: Bad request.  Request parameters were invalid.
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '404':
+          description: Record not found
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '500':
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+  '/health':
+    get:
+      tags:
+        - Health
+      description: Check health
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              checksRun:
+                type: integer
+            required:
+              - checksRun
+        '503':
+          description: Service unavailable
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
+parameters:
+  page:
+    name: page
+    in: query
+    description: The page number.
+    required: false
+    type: integer
+    default: 1
+  perPage:
+    name: perPage
+    in: query
+    description: The number of items to list per page.
+    required: false
+    type: integer
+    default: 20
+    maximum: 100
+  destroy:
+    name: destroy
+    in: query
+    description: Hard delete the item (Only allowed for admin)
+    type: boolean
+    default: false
+definitions:
+  ErrorModel:
+    type: object
+    properties:
+      message:
+        type: string
+        description: the error message
+  Cat:
+    type: object
+    properties:
+      id:
+        type: string
+        format: UUID
+      name:
+        type: string
+    required:
+      - id
+      - type
+      - manufacturer
+      - model
+      - operatingSystem
+      - operatingSystemVersion
+  CatData:
+    type: object
+    properties:
+      name:
+        type: string
