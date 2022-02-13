@@ -1,5 +1,5 @@
 # Use the base image with Node.js
-FROM node:14.15.4
+FROM node:14.18.2
 
 # Copy the current directory into the Docker image
 COPY . /model-api-dynamodb
